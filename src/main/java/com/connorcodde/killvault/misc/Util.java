@@ -75,6 +75,11 @@ public class Util {
         }));
     }
 
+    public static void clearInventory(Inventory inv, int... slot) {
+        for (int i : slot)
+            inv.setItem(i, new ItemStack(Material.AIR));
+    }
+
     public static String inventoryToBase64(List<ItemStack> items) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream);

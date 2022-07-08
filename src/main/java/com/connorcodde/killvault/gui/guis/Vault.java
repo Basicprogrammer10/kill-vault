@@ -155,8 +155,8 @@ public class Vault implements GuiInterface {
                 .getPersistentDataContainer()
                 .get(ID_NAMESPACE, PersistentDataType.INTEGER));
 
-        GuiInterface gui = new Kill(id);
-        gui.open(player, inventory);
-        GuiManager.inventory.put(player.getUniqueId(), new Gui(gui, inventory));
+        Gui gui = new Gui(new Kill(id), inventory);
+        gui.gui.open(player, inventory);
+        GuiManager.inventory.put(player.getUniqueId(), gui);
     }
 }
