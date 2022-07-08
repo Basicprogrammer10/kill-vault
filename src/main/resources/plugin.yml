@@ -1,0 +1,12 @@
+name: KillVault
+version: '${version}'
+main: com.connorcodde.killvault.KillVault
+api-version: 1.19
+prefix: KillVault
+authors: [ ConnorSlade ]
+website: https://connorcode.com
+
+commands:
+  vault:
+    usage: /vault
+    description: Opens your kill vault
