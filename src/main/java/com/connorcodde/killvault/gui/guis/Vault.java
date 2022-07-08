@@ -48,6 +48,9 @@ public class Vault implements GuiInterface {
                 m -> m.displayName(Component.text("DELETE ALL", GuiManager.BASE_STYLE.color(NamedTextColor.RED)))));
 
         // Query Database
+        KillVault.database.connection.prepareStatement(
+                        "DELETE FROM deaths WHERE strftime('%s','now') - deathTime >= 86400")
+                .executeUpdate();
 
         PreparedStatement stmt = KillVault.database.connection.prepareStatement(
                 "SELECT id, dieer, deathMessage, deathTime FROM deaths WHERE killer = ? ORDER BY deathTime DESC");
