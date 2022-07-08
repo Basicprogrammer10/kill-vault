@@ -12,5 +12,5 @@ public interface GuiInterface {
 
     void interact(InventoryClickEvent e) throws Exception;
 
-    void close(InventoryCloseEvent e);
+    void close(InventoryCloseEvent e) throws Exception;
 }

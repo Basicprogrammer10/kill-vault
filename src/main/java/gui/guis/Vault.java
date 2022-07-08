@@ -2,8 +2,10 @@ package gui.guis;
 
 import com.connorcodde.killvault.KillVault;
 import com.connorcodde.killvault.misc.Util;
+import gui.Gui;
 import gui.GuiInterface;
 import gui.GuiManager;
+import gui.GuiType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
@@ -83,7 +85,8 @@ public class Vault implements GuiInterface {
                 lore.add(Component.text(deathMessage, BASE_STYLE));
                 lore.add(Component.text(Util.formatEpochTime(deathTime), BASE_STYLE));
                 m.lore(lore);
-                m.getPersistentDataContainer().set(ID_NAMESPACE, PersistentDataType.INTEGER, id);
+                m.getPersistentDataContainer()
+                        .set(ID_NAMESPACE, PersistentDataType.INTEGER, id);
             }));
         }
 
@@ -91,7 +94,7 @@ public class Vault implements GuiInterface {
     }
 
     @Override
-    public void interact(InventoryClickEvent e) throws SQLException {
+    public void interact(InventoryClickEvent e) throws Exception {
         // Cancel Event
         e.setCancelled(true);
 
@@ -112,16 +115,49 @@ public class Vault implements GuiInterface {
 
     }
 
-    void deleteAll() {
+    void deleteAll() throws Exception {
+        // Define actions on yes / no
+        Runnable no = () -> {
+            Gui gui2 = new Gui(player, GuiType.BaseVault);
+            try {
+                gui2.gui.open(player, inventory);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            GuiManager.inventory.put(player.getUniqueId(), gui2);
+        };
+
+        Runnable yes = () -> {
+            try {
+                PreparedStatement stmt = KillVault.database.connection.prepareStatement(
+                        "DELETE FROM deaths WHERE killer = ?");
+                stmt.setString(1, player.getUniqueId()
+                        .toString());
+                stmt.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            no.run();
+        };
+
+        // Open confirm dialog
+        GuiInterface gui = new Confirm("Are you sure you want to delete all your kills?", yes, no);
+
+        gui.open(player, inventory);
+        GuiManager.inventory.put(player.getUniqueId(), new Gui(gui, inventory));
     }
 
     void deleteOne(InventoryClickEvent e) throws SQLException {
         int id = Objects.requireNonNull(Objects.requireNonNull(e.getClickedInventory())
-                .getStorageContents()[e.getSlot()].getItemMeta().getPersistentDataContainer().get(ID_NAMESPACE, PersistentDataType.INTEGER));
+                .getStorageContents()[e.getSlot()].getItemMeta()
+                .getPersistentDataContainer()
+                .get(ID_NAMESPACE, PersistentDataType.INTEGER));
 
         // Remove kill from vault
-        PreparedStatement stmt = KillVault.database.connection.prepareStatement("DELETE FROM deaths WHERE killer = ? AND id = ?");
-        stmt.setString(1, player.getUniqueId().toString());
+        PreparedStatement stmt = KillVault.database.connection.prepareStatement(
+                "DELETE FROM deaths WHERE killer = ? AND id = ?");
+        stmt.setString(1, player.getUniqueId()
+                .toString());
         stmt.setInt(2, id);
         stmt.executeUpdate();
 

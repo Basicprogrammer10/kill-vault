@@ -14,7 +14,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
@@ -48,8 +47,12 @@ public class GuiManager implements Listener {
     void onInventoryClose(InventoryCloseEvent e) {
         if (!inventory.containsKey(e.getPlayer()
                 .getUniqueId())) return;
-        inventory.get(e.getPlayer()
-                .getUniqueId()).gui.close(e);
+        try {
+            inventory.get(e.getPlayer()
+                    .getUniqueId()).gui.close(e);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         inventory.remove(e.getPlayer()
                 .getUniqueId());
     }

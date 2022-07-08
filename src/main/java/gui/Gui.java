@@ -25,4 +25,9 @@ public class Gui implements Listener {
         }
         inventory = inventory1;
     }
+
+    public Gui(GuiInterface guiInterface, Inventory inventory) {
+        this.gui = guiInterface;
+        this.inventory = inventory;
+    }
 }
