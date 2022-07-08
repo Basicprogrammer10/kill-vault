@@ -10,10 +10,21 @@ import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Util {
+    public static final Map<String, Integer> timeUnits = new LinkedHashMap<>();
+
+    static {
+        timeUnits.put("minute", 60);
+        timeUnits.put("hour", 24);
+        timeUnits.put("day", 0);
+    }
+
     public static ItemStack cleanItemStack(Material material, int count, ItemMetaEditor itemMetaEditor) {
         ItemStack item = new ItemStack(material, count);
         ItemMeta itemMeta = item.getItemMeta();
@@ -21,6 +32,22 @@ public class Util {
 
         item.setItemMeta(itemMeta);
         return item;
+    }
+
+    public static String formatEpochTime(long epochSeconds) {
+        float diff = Instant.now()
+                .getEpochSecond() - epochSeconds;
+        if (diff < 60) return "seconds ago";
+
+        diff /= 60;
+        for (Map.Entry<String, Integer> i : timeUnits.entrySet()) {
+            if (i.getValue() == 0 || diff < i.getValue()) {
+                diff = Math.round(diff);
+                return String.format("%d %s%s ago", (int) diff, i.getKey(), diff > 1 ? "s" : "");
+            }
+            diff /= i.getValue();
+        }
+        return String.format("%d days", Math.round(diff));
     }
 
     public static String inventoryToBase64(List<ItemStack> items) throws IOException {

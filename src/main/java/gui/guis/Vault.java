@@ -9,7 +9,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
@@ -18,9 +17,6 @@ import org.bukkit.inventory.meta.SkullMeta;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -38,7 +34,7 @@ public class Vault implements GuiInterface {
     public Inventory open(Player player, Inventory inv) throws SQLException {
         inventory = inv;
         this.player = player;
-        if (inv == null || inv.getSize() != 45)
+        if (inventory == null || inventory.getSize() != 45)
             inventory = getServer().createInventory(null, 45, Component.text("Vault"));
 
         // Draw Border
@@ -75,14 +71,13 @@ public class Vault implements GuiInterface {
             int deathTime = res.getInt(3);
 
             inventory.setItem(index, Util.cleanItemStack(Material.PLAYER_HEAD, 1, m -> {
-                m.displayName(Component.text(Objects.requireNonNull(deadPlayer.getName()),
+                m.displayName(Component.text(deadPlayer.getName() == null ? "UNKNOWN" : deadPlayer.getName(),
                         BASE_STYLE.color(NamedTextColor.YELLOW)));
                 ((SkullMeta) m).setOwningPlayer(deadPlayer);
 
                 List<Component> lore = new ArrayList<>();
                 lore.add(Component.text(deathMessage, BASE_STYLE));
-                lore.add(Component.text(LocalDateTime.ofEpochSecond(deathTime, 0, ZoneOffset.UTC)
-                        .format(DateTimeFormatter.ofPattern("HH:mm:ss - MM/dd/uuuu")), BASE_STYLE));
+                lore.add(Component.text(Util.formatEpochTime(deathTime), BASE_STYLE));
                 m.lore(lore);
             }));
         }
@@ -92,8 +87,19 @@ public class Vault implements GuiInterface {
 
     @Override
     public void interact(InventoryClickEvent e) {
-        if (e.getAction() == InventoryAction.NOTHING || e.getClickedInventory() != inventory) return;
+        // Cancel Event
         e.setCancelled(true);
+
+        // Handle Delete all button
+        if (e.getSlot() == 40) {
+            deleteAll();
+            return;
+        }
+
+        if (Objects.requireNonNull(e.getClickedInventory())
+                .getStorageContents()[e.getSlot()].getType() != Material.PLAYER_HEAD) return;
+        if (e.isLeftClick()) openKill();
+        if (e.isRightClick()) deleteOne();
     }
 
     @Override
@@ -101,10 +107,12 @@ public class Vault implements GuiInterface {
 
     }
 
-    void refresh(Inventory inventory) {
-
+    void deleteAll() {
     }
 
-    void deleteAll() {
+    void deleteOne() {
+    }
+
+    void openKill() {
     }
 }

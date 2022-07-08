@@ -6,7 +6,6 @@ import com.connorcodde.killvault.misc.Database;
 import gui.GuiManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
 import java.sql.SQLException;
 
 public final class KillVault extends JavaPlugin {
