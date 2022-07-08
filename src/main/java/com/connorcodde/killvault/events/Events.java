@@ -6,6 +6,7 @@ import static org.bukkit.Bukkit.getServer;
 
 public class Events {
     public static void init() {
-        getServer().getPluginManager().registerEvents(new PlayerDeath(), KillVault.plugin);
+        getServer().getPluginManager()
+                .registerEvents(new PlayerDeath(), KillVault.plugin);
     }
 }
