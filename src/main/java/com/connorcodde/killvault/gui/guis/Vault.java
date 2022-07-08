@@ -2,9 +2,9 @@ package com.connorcodde.killvault.gui.guis;
 
 import com.connorcodde.killvault.KillVault;
 import com.connorcodde.killvault.gui.Gui;
+import com.connorcodde.killvault.gui.GuiInterface;
 import com.connorcodde.killvault.gui.GuiManager;
 import com.connorcodde.killvault.misc.Util;
-import com.connorcodde.killvault.gui.GuiInterface;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
@@ -14,14 +14,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -29,7 +26,7 @@ import static org.bukkit.Bukkit.getOfflinePlayer;
 import static org.bukkit.Bukkit.getServer;
 
 public class Vault implements GuiInterface {
-    static final NamespacedKey ID_NAMESPACE = new NamespacedKey(KillVault.plugin, "id");
+    public static final NamespacedKey ID_NAMESPACE = new NamespacedKey(KillVault.plugin, "id");
     Inventory inventory;
     Player player;
 
@@ -72,20 +69,9 @@ public class Vault implements GuiInterface {
             UUID dead = UUID.fromString(res.getString(2));
             OfflinePlayer deadPlayer = getOfflinePlayer(dead);
             String deathMessage = res.getString(3);
-            int deathTime = res.getInt(4);
+            long deathTime = res.getLong(4);
 
-            inventory.setItem(index, Util.cleanItemStack(Material.PLAYER_HEAD, 1, m -> {
-                m.displayName(Component.text(deadPlayer.getName() == null ? "UNKNOWN" : deadPlayer.getName(),
-                        GuiManager.BASE_STYLE.color(NamedTextColor.YELLOW)));
-                ((SkullMeta) m).setOwningPlayer(deadPlayer);
-
-                List<Component> lore = new ArrayList<>();
-                lore.add(Component.text(deathMessage, GuiManager.BASE_STYLE));
-                lore.add(Component.text(Util.formatEpochTime(deathTime), GuiManager.BASE_STYLE));
-                m.lore(lore);
-                m.getPersistentDataContainer()
-                        .set(ID_NAMESPACE, PersistentDataType.INTEGER, id);
-            }));
+            Util.setPlayerItem(inventory, index, deadPlayer, deathMessage, deathTime, id);
         }
 
         return inventory;
@@ -164,10 +150,12 @@ public class Vault implements GuiInterface {
     }
 
     void openKill(InventoryClickEvent e) throws Exception {
-        GuiInterface gui = new Kill(Objects.requireNonNull(e.getInventory()
+        int id = Objects.requireNonNull(Objects.requireNonNull(e.getClickedInventory())
                 .getStorageContents()[e.getSlot()].getItemMeta()
                 .getPersistentDataContainer()
-                .get(ID_NAMESPACE, PersistentDataType.INTEGER)));
+                .get(ID_NAMESPACE, PersistentDataType.INTEGER));
+
+        GuiInterface gui = new Kill(id);
         gui.open(player, inventory);
         GuiManager.inventory.put(player.getUniqueId(), new Gui(gui, inventory));
     }

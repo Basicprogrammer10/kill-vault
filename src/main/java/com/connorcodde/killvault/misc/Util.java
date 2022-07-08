@@ -1,8 +1,15 @@
 package com.connorcodde.killvault.misc;
 
+import com.connorcodde.killvault.gui.GuiManager;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
@@ -15,6 +22,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.connorcodde.killvault.gui.guis.Vault.ID_NAMESPACE;
 
 public class Util {
     public static final Map<String, Integer> timeUnits = new LinkedHashMap<>();
@@ -49,6 +58,23 @@ public class Util {
         return String.format("%d days", Math.round(diff));
     }
 
+    public static void setPlayerItem(Inventory inv, int index, OfflinePlayer player, String deathMessage, long deathTime, int id) {
+        inv.setItem(index, Util.cleanItemStack(Material.PLAYER_HEAD, 1, m -> {
+            m.displayName(Component.text(player.getName() == null ? "UNKNOWN" : player.getName(),
+                    GuiManager.BASE_STYLE.color(NamedTextColor.YELLOW)));
+            ((SkullMeta) m).setOwningPlayer(player);
+
+            List<Component> lore = new ArrayList<>();
+            lore.add(Component.text(deathMessage, GuiManager.BASE_STYLE));
+            lore.add(Component.text(Util.formatEpochTime(deathTime), GuiManager.BASE_STYLE));
+            m.lore(lore);
+
+            if (id < 0) return;
+            m.getPersistentDataContainer()
+                    .set(ID_NAMESPACE, PersistentDataType.INTEGER, id);
+        }));
+    }
+
     public static String inventoryToBase64(List<ItemStack> items) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream);
@@ -60,14 +86,14 @@ public class Util {
         return Base64Coder.encodeLines(outputStream.toByteArray());
     }
 
-    public static List<ItemStack> fromBase64(String data) throws IOException, ClassNotFoundException {
+    public static List<ItemStack> inventoryFromBase64(String data) throws IOException, ClassNotFoundException {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Coder.decodeLines(data));
         BukkitObjectInputStream dataInput = new BukkitObjectInputStream(inputStream);
         List<ItemStack> items = new ArrayList<>();
 
-        for (int i = 0; i < dataInput.readInt(); i++) {
+        int len = dataInput.readInt();
+        for (int i = 0; i < len; i++)
             items.add((ItemStack) dataInput.readObject());
-        }
         dataInput.close();
         return items;
     }
