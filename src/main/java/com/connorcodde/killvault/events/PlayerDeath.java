@@ -53,5 +53,8 @@ public class PlayerDeath implements Listener {
         }
         KillVault.database.connection.commit();
         KillVault.database.connection.setAutoCommit(true);
+
+        e.getDrops()
+                .clear();
     }
 }

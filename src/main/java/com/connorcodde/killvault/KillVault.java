@@ -3,7 +3,7 @@ package com.connorcodde.killvault;
 import com.connorcodde.killvault.commands.Commands;
 import com.connorcodde.killvault.events.Events;
 import com.connorcodde.killvault.misc.Database;
-import gui.GuiManager;
+import com.connorcodde.killvault.gui.GuiManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;

@@ -1,4 +1,4 @@
-package gui;
+package com.connorcodde.killvault.gui;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;

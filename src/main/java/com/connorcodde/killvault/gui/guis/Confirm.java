@@ -1,7 +1,8 @@
-package gui.guis;
+package com.connorcodde.killvault.gui.guis;
 
+import com.connorcodde.killvault.gui.GuiInterface;
+import com.connorcodde.killvault.gui.GuiManager;
 import com.connorcodde.killvault.misc.Util;
-import gui.GuiInterface;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
@@ -13,7 +14,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
-import static gui.GuiManager.BASE_STYLE;
 import static org.bukkit.Bukkit.getServer;
 
 public class Confirm implements GuiInterface {
@@ -46,13 +46,13 @@ public class Confirm implements GuiInterface {
         }
 
         inventory.setItem(slots[0], Util.cleanItemStack(Material.RED_STAINED_GLASS_PANE, 1,
-                m -> m.displayName(Component.text("Deny", BASE_STYLE.color(NamedTextColor.RED)))));
+                m -> m.displayName(Component.text("Deny", GuiManager.BASE_STYLE.color(NamedTextColor.RED)))));
 
         inventory.setItem(slots[1], Util.cleanItemStack(Material.MAGENTA_STAINED_GLASS_PANE, 1,
-                m -> m.displayName(Component.text(message, BASE_STYLE))));
+                m -> m.displayName(Component.text(message, GuiManager.BASE_STYLE))));
 
         inventory.setItem(slots[2], Util.cleanItemStack(Material.LIME_STAINED_GLASS_PANE, 1,
-                m -> m.displayName(Component.text("Confirm", BASE_STYLE.color(NamedTextColor.GREEN)))));
+                m -> m.displayName(Component.text("Confirm", GuiManager.BASE_STYLE.color(NamedTextColor.GREEN)))));
 
         return inventory;
     }

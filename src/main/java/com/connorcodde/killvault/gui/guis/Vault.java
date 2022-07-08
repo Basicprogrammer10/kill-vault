@@ -1,11 +1,10 @@
-package gui.guis;
+package com.connorcodde.killvault.gui.guis;
 
 import com.connorcodde.killvault.KillVault;
+import com.connorcodde.killvault.gui.Gui;
+import com.connorcodde.killvault.gui.GuiManager;
 import com.connorcodde.killvault.misc.Util;
-import gui.Gui;
-import gui.GuiInterface;
-import gui.GuiManager;
-import gui.GuiType;
+import com.connorcodde.killvault.gui.GuiInterface;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
@@ -26,7 +25,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import static gui.GuiManager.BASE_STYLE;
 import static org.bukkit.Bukkit.getOfflinePlayer;
 import static org.bukkit.Bukkit.getServer;
 
@@ -50,12 +48,12 @@ public class Vault implements GuiInterface {
             inventory.setItem(i, GuiManager.BORDER_ITEM);
         }
         inventory.setItem(40, Util.cleanItemStack(Material.HEART_OF_THE_SEA, 1,
-                m -> m.displayName(Component.text("DELETE ALL", BASE_STYLE.color(NamedTextColor.RED)))));
+                m -> m.displayName(Component.text("DELETE ALL", GuiManager.BASE_STYLE.color(NamedTextColor.RED)))));
 
         // Query Database
 
         PreparedStatement stmt = KillVault.database.connection.prepareStatement(
-                "SELECT id, dieer, deathMessage, deathTime FROM deaths WHERE killer = ?");
+                "SELECT id, dieer, deathMessage, deathTime FROM deaths WHERE killer = ? ORDER BY deathTime DESC");
         stmt.setString(1, player.getUniqueId()
                 .toString());
         ResultSet res = stmt.executeQuery();
@@ -78,12 +76,12 @@ public class Vault implements GuiInterface {
 
             inventory.setItem(index, Util.cleanItemStack(Material.PLAYER_HEAD, 1, m -> {
                 m.displayName(Component.text(deadPlayer.getName() == null ? "UNKNOWN" : deadPlayer.getName(),
-                        BASE_STYLE.color(NamedTextColor.YELLOW)));
+                        GuiManager.BASE_STYLE.color(NamedTextColor.YELLOW)));
                 ((SkullMeta) m).setOwningPlayer(deadPlayer);
 
                 List<Component> lore = new ArrayList<>();
-                lore.add(Component.text(deathMessage, BASE_STYLE));
-                lore.add(Component.text(Util.formatEpochTime(deathTime), BASE_STYLE));
+                lore.add(Component.text(deathMessage, GuiManager.BASE_STYLE));
+                lore.add(Component.text(Util.formatEpochTime(deathTime), GuiManager.BASE_STYLE));
                 m.lore(lore);
                 m.getPersistentDataContainer()
                         .set(ID_NAMESPACE, PersistentDataType.INTEGER, id);
@@ -118,9 +116,9 @@ public class Vault implements GuiInterface {
     void deleteAll() throws Exception {
         // Define actions on yes / no
         Runnable no = () -> {
-            Gui gui2 = new Gui(player, GuiType.BaseVault);
+            Gui gui2 = new Gui(this, inventory);
             try {
-                gui2.gui.open(player, inventory);
+                gui2.inventory = gui2.gui.open(player, inventory);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -165,6 +163,12 @@ public class Vault implements GuiInterface {
         open(player, inventory);
     }
 
-    void openKill(InventoryClickEvent e) {
+    void openKill(InventoryClickEvent e) throws Exception {
+        GuiInterface gui = new Kill(Objects.requireNonNull(e.getInventory()
+                .getStorageContents()[e.getSlot()].getItemMeta()
+                .getPersistentDataContainer()
+                .get(ID_NAMESPACE, PersistentDataType.INTEGER)));
+        gui.open(player, inventory);
+        GuiManager.inventory.put(player.getUniqueId(), new Gui(gui, inventory));
     }
 }

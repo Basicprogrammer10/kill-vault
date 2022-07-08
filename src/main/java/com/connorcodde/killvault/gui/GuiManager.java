@@ -1,4 +1,4 @@
-package gui;
+package com.connorcodde.killvault.gui;
 
 import com.connorcodde.killvault.misc.Util;
 import net.kyori.adventure.text.Component;
@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
@@ -30,9 +31,14 @@ public class GuiManager implements Listener {
                     Component.empty()));
     public static HashMap<UUID, Gui> inventory = new HashMap<>();
 
-    public void open(UUID player, GuiType guiType) {
-        Gui gui = new Gui(getServer().getPlayer(player), guiType);
-        inventory.put(player, gui);
+    public void open(UUID player, GuiInterface guiInterface, Inventory inventory) {
+        Gui gui = new Gui(guiInterface, inventory);
+        try {
+            gui.inventory = gui.gui.open(getServer().getPlayer(player), gui.inventory);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        GuiManager.inventory.put(player, gui);
         Objects.requireNonNull(getServer().getPlayer(player))
                 .openInventory(gui.inventory);
     }

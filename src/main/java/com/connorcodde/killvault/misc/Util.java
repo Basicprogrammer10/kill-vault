@@ -20,6 +20,7 @@ public class Util {
     public static final Map<String, Integer> timeUnits = new LinkedHashMap<>();
 
     static {
+        timeUnits.put("second", 60);
         timeUnits.put("minute", 60);
         timeUnits.put("hour", 24);
         timeUnits.put("day", 0);
@@ -37,9 +38,7 @@ public class Util {
     public static String formatEpochTime(long epochSeconds) {
         float diff = Instant.now()
                 .getEpochSecond() - epochSeconds;
-        if (diff < 60) return "seconds ago";
 
-        diff /= 60;
         for (Map.Entry<String, Integer> i : timeUnits.entrySet()) {
             if (i.getValue() == 0 || diff < i.getValue()) {
                 diff = Math.round(diff);
