@@ -1,5 +1,6 @@
 package com.connorcodde.killvault.misc;
 
+import com.connorcodde.killvault.KillVault;
 import com.connorcodde.killvault.gui.GuiManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -17,13 +18,16 @@ import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.logging.Level;
 
 import static com.connorcodde.killvault.gui.guis.Vault.ID_NAMESPACE;
+import static org.bukkit.Bukkit.getServer;
 
 public class Util {
     public static final Map<String, Integer> timeUnits = new LinkedHashMap<>();
@@ -75,11 +79,6 @@ public class Util {
         }));
     }
 
-    public static void clearInventory(Inventory inv, int... slot) {
-        for (int i : slot)
-            inv.setItem(i, new ItemStack(Material.AIR));
-    }
-
     public static String inventoryToBase64(List<ItemStack> items) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         BukkitObjectOutputStream dataOutput = new BukkitObjectOutputStream(outputStream);
@@ -101,5 +100,24 @@ public class Util {
             items.add((ItemStack) dataInput.readObject());
         dataInput.close();
         return items;
+    }
+
+    public static void checkVersion() {
+        try {
+            URL url = new URL("https://version.connorcode.com/KillVault/status?code=xLF5EH6pUnTUnDPcb9Bg");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestProperty("accept", "text/plain");
+            InputStream responseStream = connection.getInputStream();
+
+            Scanner scanner = new Scanner(responseStream, StandardCharsets.UTF_8.name());
+            String version = scanner.useDelimiter("\\A")
+                    .next()
+                    .split(",")[0];
+
+            if (version.equals(KillVault.VERSION)) return;
+            getServer().getLogger()
+                    .log(Level.WARNING, String.format("Version Outdated! (%s > %s)", version, KillVault.VERSION));
+        } catch (IOException ignored) {
+        }
     }
 }
