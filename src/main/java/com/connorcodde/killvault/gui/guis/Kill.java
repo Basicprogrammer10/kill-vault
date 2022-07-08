@@ -91,12 +91,10 @@ public class Kill implements GuiInterface {
     public void close(InventoryCloseEvent e) throws IOException, SQLException {
         // Do the inverse as before to put the current inv state back into the database
         List<ItemStack> itemStacks = new ArrayList<>();
-        for (int i = 0; i < 41; i++) itemStacks.add(new ItemStack(Material.AIR));
-        int j = 0;
 
-        for (int i = 36; i < 45; i++) itemStacks.set(j++, inventory.getItem(i));
-        for (int i = 9; i < 36; i++) itemStacks.set(j++, inventory.getItem(i));
-        for (int i = 0; i < 5; i++) itemStacks.set(j++, inventory.getItem(i));
+        for (int i = 36; i < 45; i++) itemStacks.add(inventory.getItem(i));
+        for (int i = 9; i < 36; i++) itemStacks.add(inventory.getItem(i));
+        for (int i = 0; i < 5; i++) itemStacks.add(inventory.getItem(i));
 
         // Serialize inventor
         String inv = Util.inventoryToBase64(itemStacks);

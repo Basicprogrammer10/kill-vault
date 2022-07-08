@@ -2,9 +2,13 @@ package com.connorcodde.killvault.events;
 
 import com.connorcodde.killvault.KillVault;
 import com.connorcodde.killvault.misc.Util;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.projectiles.ProjectileSource;
 
 import java.io.IOException;
 import java.sql.PreparedStatement;
@@ -12,19 +16,23 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 public class PlayerDeath implements Listener {
     @EventHandler
     void onPlayerDeath(PlayerDeathEvent e) throws IOException, SQLException {
-        if (e.getPlayer()
-                .getKiller() == null) return;
-        UUID killer = e.getPlayer()
-                .getKiller()
-                .getUniqueId();
-        UUID died = e.getPlayer()
-                .getUniqueId();
+        Optional<Player> findKiller = findKiller(Objects.requireNonNull(e.getPlayer()
+                        .getLastDamageCause())
+                .getEntity());
+        if (findKiller.isEmpty()) return;
+        Player killer = findKiller.get();
+
         String deathMessage = e.getDeathMessage();
+        UUID killerUUID = killer.getUniqueId();
+        UUID diedUUID = e.getPlayer()
+                .getUniqueId();
         long deathTime = Instant.now()
                 .getEpochSecond();
         String inventory = Util.inventoryToBase64(Arrays.asList(e.getPlayer()
@@ -33,8 +41,8 @@ public class PlayerDeath implements Listener {
 
         PreparedStatement stmt = KillVault.database.connection.prepareStatement(
                 "INSERT INTO deaths (killer, dieer, deathInventory, deathMessage, deathTime) VALUES (?, ?, ?, ?, ?)");
-        stmt.setString(1, killer.toString());
-        stmt.setString(2, died.toString());
+        stmt.setString(1, killerUUID.toString());
+        stmt.setString(2, diedUUID.toString());
         stmt.setString(3, inventory);
         stmt.setString(4, deathMessage);
         stmt.setLong(5, deathTime);
@@ -56,5 +64,32 @@ public class PlayerDeath implements Listener {
 
         e.getDrops()
                 .clear();
+    }
+
+    // From https://github.com/plan-player-analytics/Plan
+    public Optional<Player> findKiller(Entity dead) {
+        EntityDamageEvent entityDamageEvent = dead.getLastDamageCause();
+        if (!(entityDamageEvent instanceof EntityDamageByEntityEvent)) return Optional.empty();
+
+        Entity killer = ((EntityDamageByEntityEvent) entityDamageEvent).getDamager();
+        if (killer instanceof Player) return Optional.of((Player) killer);
+        if (killer instanceof Tameable) return getOwner((Tameable) killer);
+        if (killer instanceof Projectile) return getShooter((Projectile) killer);
+        if (killer instanceof EnderCrystal) return findKiller(killer);
+        return Optional.empty();
+    }
+
+    private Optional<Player> getShooter(Projectile projectile) {
+        ProjectileSource source = projectile.getShooter();
+        if (source instanceof Player) return Optional.of((Player) source);
+        return Optional.empty();
+    }
+
+    private Optional<Player> getOwner(Tameable tameable) {
+        if (!tameable.isTamed()) return Optional.empty();
+
+        AnimalTamer owner = tameable.getOwner();
+        if (owner instanceof Player) return Optional.of((Player) owner);
+        return Optional.empty();
     }
 }
