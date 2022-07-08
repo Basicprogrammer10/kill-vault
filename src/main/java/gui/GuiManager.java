@@ -21,14 +21,14 @@ import java.util.UUID;
 import static org.bukkit.Bukkit.getServer;
 
 public class GuiManager implements Listener {
-    public static HashMap<UUID, Gui> inventory = new HashMap<>();
     public static final Style BASE_STYLE = Style.style()
             .color(TextColor.color(NamedTextColor.GRAY))
             .decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE)
             .build();
-    public static final ItemStack BORDER_ITEM = Util.cleanItemStack(Material.RED_STAINED_GLASS_PANE, 1, m -> m.displayName(
-            Component.empty()));
-
+    public static final ItemStack BORDER_ITEM = Util.cleanItemStack(Material.RED_STAINED_GLASS_PANE, 1,
+            m -> m.displayName(
+                    Component.empty()));
+    public static HashMap<UUID, Gui> inventory = new HashMap<>();
 
     public void open(UUID player, GuiType guiType) {
         Gui gui = new Gui(getServer().getPlayer(player), guiType);
@@ -45,15 +45,19 @@ public class GuiManager implements Listener {
 
     @EventHandler
     void onInventoryClose(InventoryCloseEvent e) {
-        if (!inventory.containsKey(e.getPlayer().getUniqueId())) return;
-        inventory.get(e.getPlayer().getUniqueId()).gui.close(e);
+        if (!inventory.containsKey(e.getPlayer()
+                .getUniqueId())) return;
+        inventory.get(e.getPlayer()
+                .getUniqueId()).gui.close(e);
         inventory.remove(e.getPlayer()
                 .getUniqueId());
     }
 
     @EventHandler
     void onInventoryClick(InventoryClickEvent e) {
-        if (!inventory.containsKey(e.getWhoClicked().getUniqueId())) return;
-        inventory.get(e.getWhoClicked().getUniqueId()).gui.interact(e);
+        if (!inventory.containsKey(e.getWhoClicked()
+                .getUniqueId())) return;
+        inventory.get(e.getWhoClicked()
+                .getUniqueId()).gui.interact(e);
     }
 }

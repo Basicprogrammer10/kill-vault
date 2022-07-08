@@ -11,10 +11,18 @@ public class Gui implements Listener {
     public final Inventory inventory;
 
     public Gui(Player player, GuiType type) {
+        Inventory inventory1;
         gui = switch (type) {
             case BaseVault -> new Vault();
             case Kill -> new Kill();
         };
-        inventory = gui.open(player);
+
+        inventory1 = null;
+        try {
+            inventory1 = gui.open(player);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        inventory = inventory1;
     }
 }
