@@ -17,16 +17,14 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.bukkit.Bukkit.getOfflinePlayer;
 import static org.bukkit.Bukkit.getServer;
 
 public class Kill implements GuiInterface {
     final int killId;
+    boolean empty;
     Inventory inventory;
 
     public Kill(int killId) {
@@ -38,6 +36,10 @@ public class Kill implements GuiInterface {
         inventory = inv;
         if (inventory == null || inventory.getSize() != 45)
             inventory = getServer().createInventory(null, 45, Component.text("Vault"));
+        empty = Arrays.stream(player.getInventory()
+                        .getContents())
+                .filter(Objects::nonNull)
+                .allMatch(d -> d.getType() == Material.AIR);
 
         PreparedStatement stmt = KillVault.database.connection.prepareStatement(
                 "SELECT dieer, deathInventory, deathMessage, deathTime from  deaths WHERE id = ?");
@@ -78,9 +80,15 @@ public class Kill implements GuiInterface {
         InventoryAction[] placeActions = new InventoryAction[]{InventoryAction.PLACE_ALL, InventoryAction.PLACE_ONE, InventoryAction.PLACE_SOME};
         int[] invalidSlots = new int[]{5, 6, 7, 8};
 
+        if (Arrays.stream(invalidSlots)
+                .anyMatch(d -> d == e.getSlot()) && e.getClickedInventory() == inventory) {
+            e.setCancelled(true);
+            return;
+        }
+
+        if (empty) return;
         if (Arrays.stream(invalidActions)
-                .anyMatch(d -> d == e.getAction()) || (((Arrays.stream(invalidSlots)
-                .anyMatch(d -> d == e.getSlot()) || e.getAction() == InventoryAction.SWAP_WITH_CURSOR ||
+                .anyMatch(d -> d == e.getAction()) || (((e.getAction() == InventoryAction.SWAP_WITH_CURSOR ||
                 Arrays.stream(placeActions)
                         .anyMatch(d -> d == e.getAction())) && e.getClickedInventory() == inventory)) ||
                 (e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY && e.getClickedInventory() != inventory))
