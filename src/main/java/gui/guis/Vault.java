@@ -35,9 +35,11 @@ public class Vault implements GuiInterface {
     Player player;
 
     @Override
-    public Inventory open(Player player) throws SQLException {
-        inventory = getServer().createInventory(null, 9 * 5, Component.text("Your Vault"));
+    public Inventory open(Player player, Inventory inv) throws SQLException {
+        inventory = inv;
         this.player = player;
+        if (inv == null || inv.getSize() != 45)
+            inventory = getServer().createInventory(null, 45, Component.text("Vault"));
 
         // Draw Border
         for (int i = 0; i < 9 * 5; i++) {
@@ -97,5 +99,12 @@ public class Vault implements GuiInterface {
     @Override
     public void close(InventoryCloseEvent e) {
 
+    }
+
+    void refresh(Inventory inventory) {
+
+    }
+
+    void deleteAll() {
     }
 }

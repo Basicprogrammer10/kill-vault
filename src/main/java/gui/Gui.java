@@ -19,7 +19,7 @@ public class Gui implements Listener {
 
         inventory1 = null;
         try {
-            inventory1 = gui.open(player);
+            inventory1 = gui.open(player, null);
         } catch (Exception e) {
             e.printStackTrace();
         }

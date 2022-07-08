@@ -5,10 +5,10 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 
-import java.sql.SQLException;
+import javax.annotation.Nullable;
 
 public interface GuiInterface {
-    Inventory open(Player player) throws SQLException;
+    Inventory open(Player player, @Nullable Inventory inventory) throws Exception;
 
     void interact(InventoryClickEvent e);
 

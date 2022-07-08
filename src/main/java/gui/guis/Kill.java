@@ -8,7 +8,7 @@ import org.bukkit.inventory.Inventory;
 
 public class Kill implements GuiInterface {
     @Override
-    public Inventory open(Player player) {
+    public Inventory open(Player player, Inventory inv) {
         return null;
     }
 

@@ -11,9 +11,12 @@ import java.sql.Statement;
 public class Database {
     public Connection connection;
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Database(String path) {
         // Init database
         try {
+            KillVault.plugin.getDataFolder()
+                    .mkdirs();
             this.connection = DriverManager.getConnection(
                     "jdbc:sqlite:" + KillVault.plugin.getDataFolder() + File.separator + path);
 
@@ -23,7 +26,7 @@ public class Database {
             stmt.executeUpdate("PRAGMA journal_mode = WAL");
 
             stmt.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS deaths (killer TEXT NOT NULL, dieer TEXT NOT NULL, deathInventory TEXT, deathMessage TEXT, deathTime INTEGER NOT NULL)");
+                    "CREATE TABLE IF NOT EXISTS deaths (id integer primary key autoincrement, killer TEXT NOT NULL, dieer TEXT NOT NULL, deathInventory TEXT, deathMessage TEXT, deathTime INTEGER NOT NULL)");
             stmt.close();
         } catch (SQLException e) {
             e.printStackTrace();

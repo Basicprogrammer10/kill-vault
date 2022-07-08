@@ -13,13 +13,9 @@ public final class KillVault extends JavaPlugin {
     public static JavaPlugin plugin;
     public static Database database;
     public static GuiManager guiManager = new GuiManager();
-    final File configFolder = new File(String.valueOf(getDataFolder()));
 
     @Override
     public void onEnable() {
-        assert configFolder.exists() || configFolder.mkdir();
-        System.out.println(configFolder.exists());
-        System.out.println(configFolder.mkdir());
         plugin = getPlugin(KillVault.class);
 
         // Init Database
