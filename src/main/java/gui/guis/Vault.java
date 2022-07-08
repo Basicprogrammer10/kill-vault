@@ -7,12 +7,14 @@ import gui.GuiManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,6 +29,7 @@ import static org.bukkit.Bukkit.getOfflinePlayer;
 import static org.bukkit.Bukkit.getServer;
 
 public class Vault implements GuiInterface {
+    static final NamespacedKey ID_NAMESPACE = new NamespacedKey(KillVault.plugin, "id");
     Inventory inventory;
     Player player;
 
@@ -50,7 +53,7 @@ public class Vault implements GuiInterface {
         // Query Database
 
         PreparedStatement stmt = KillVault.database.connection.prepareStatement(
-                "SELECT dieer, deathMessage, deathTime FROM deaths WHERE killer = ?");
+                "SELECT id, dieer, deathMessage, deathTime FROM deaths WHERE killer = ?");
         stmt.setString(1, player.getUniqueId()
                 .toString());
         ResultSet res = stmt.executeQuery();
@@ -65,10 +68,11 @@ public class Vault implements GuiInterface {
                 continue;
             }
 
-            UUID dead = UUID.fromString(res.getString(1));
+            int id = res.getInt(1);
+            UUID dead = UUID.fromString(res.getString(2));
             OfflinePlayer deadPlayer = getOfflinePlayer(dead);
-            String deathMessage = res.getString(2);
-            int deathTime = res.getInt(3);
+            String deathMessage = res.getString(3);
+            int deathTime = res.getInt(4);
 
             inventory.setItem(index, Util.cleanItemStack(Material.PLAYER_HEAD, 1, m -> {
                 m.displayName(Component.text(deadPlayer.getName() == null ? "UNKNOWN" : deadPlayer.getName(),
@@ -79,6 +83,7 @@ public class Vault implements GuiInterface {
                 lore.add(Component.text(deathMessage, BASE_STYLE));
                 lore.add(Component.text(Util.formatEpochTime(deathTime), BASE_STYLE));
                 m.lore(lore);
+                m.getPersistentDataContainer().set(ID_NAMESPACE, PersistentDataType.INTEGER, id);
             }));
         }
 
@@ -86,7 +91,7 @@ public class Vault implements GuiInterface {
     }
 
     @Override
-    public void interact(InventoryClickEvent e) {
+    public void interact(InventoryClickEvent e) throws SQLException {
         // Cancel Event
         e.setCancelled(true);
 
@@ -98,8 +103,8 @@ public class Vault implements GuiInterface {
 
         if (Objects.requireNonNull(e.getClickedInventory())
                 .getStorageContents()[e.getSlot()].getType() != Material.PLAYER_HEAD) return;
-        if (e.isLeftClick()) openKill();
-        if (e.isRightClick()) deleteOne();
+        if (e.isLeftClick()) openKill(e);
+        if (e.isRightClick()) deleteOne(e);
     }
 
     @Override
@@ -110,9 +115,20 @@ public class Vault implements GuiInterface {
     void deleteAll() {
     }
 
-    void deleteOne() {
+    void deleteOne(InventoryClickEvent e) throws SQLException {
+        int id = Objects.requireNonNull(Objects.requireNonNull(e.getClickedInventory())
+                .getStorageContents()[e.getSlot()].getItemMeta().getPersistentDataContainer().get(ID_NAMESPACE, PersistentDataType.INTEGER));
+
+        // Remove kill from vault
+        PreparedStatement stmt = KillVault.database.connection.prepareStatement("DELETE FROM deaths WHERE killer = ? AND id = ?");
+        stmt.setString(1, player.getUniqueId().toString());
+        stmt.setInt(2, id);
+        stmt.executeUpdate();
+
+        // Refresh vault
+        open(player, inventory);
     }
 
-    void openKill() {
+    void openKill(InventoryClickEvent e) {
     }
 }

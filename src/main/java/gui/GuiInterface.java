@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 public interface GuiInterface {
     Inventory open(Player player, @Nullable Inventory inventory) throws Exception;
 
-    void interact(InventoryClickEvent e);
+    void interact(InventoryClickEvent e) throws Exception;
 
     void close(InventoryCloseEvent e);
 }
