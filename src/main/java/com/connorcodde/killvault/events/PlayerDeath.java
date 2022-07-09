@@ -20,15 +20,35 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.connorcodde.killvault.events.PlayerInteract.respawnAnchorExplosions;
+import static org.bukkit.Bukkit.getServer;
+
 public class PlayerDeath implements Listener {
     @EventHandler
     void onPlayerDeath(PlayerDeathEvent e) throws IOException, SQLException {
+        System.out.println(respawnAnchorExplosions);
+        System.out.println(getServer().getCurrentTick());
+
         Optional<Player> findKiller = findKiller(Objects.requireNonNull(e.getPlayer()
                         .getLastDamageCause())
                 .getEntity());
+        if (findKiller.isEmpty() && e.getPlayer()
+                .getLastDamageCause()
+                .getCause() == EntityDamageEvent.DamageCause.BLOCK_EXPLOSION) {
+            for (PlayerInteract.BlockDamageInfo i : respawnAnchorExplosions) {
+                if (!i.currentTick() || e.getPlayer()
+                        .getLocation()
+                        .distance(i.location()) > 5) continue;
+                findKiller = Optional.of(i.player());
+                break;
+            }
+        }
+        respawnAnchorExplosions.removeIf(i -> !i.currentTick());
+
         if (findKiller.isEmpty()) return;
         Player killer = findKiller.get();
 
+        /// sorry,,,
         String deathMessage = e.getDeathMessage();
         UUID killerUUID = killer.getUniqueId();
         UUID diedUUID = e.getPlayer()

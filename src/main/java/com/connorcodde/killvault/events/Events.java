@@ -9,6 +9,7 @@ public class Events {
     public static void init() {
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new PlayerDeath(), KillVault.plugin);
+        pm.registerEvents(new PlayerInteract(), KillVault.plugin);
         pm.registerEvents(KillVault.guiManager, KillVault.plugin);
     }
 }

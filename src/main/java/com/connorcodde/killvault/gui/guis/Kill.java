@@ -77,7 +77,7 @@ public class Kill implements GuiInterface {
     @Override
     public void interact(InventoryClickEvent e) {
         InventoryAction[] invalidActions = new InventoryAction[]{InventoryAction.CLONE_STACK, InventoryAction.UNKNOWN, InventoryAction.COLLECT_TO_CURSOR, InventoryAction.HOTBAR_SWAP};
-        InventoryAction[] placeActions = new InventoryAction[]{InventoryAction.PLACE_ALL, InventoryAction.PLACE_ONE, InventoryAction.PLACE_SOME};
+        InventoryAction[] placeActions = new InventoryAction[]{InventoryAction.PLACE_ALL, InventoryAction.PLACE_ONE, InventoryAction.PLACE_SOME, InventoryAction.SWAP_WITH_CURSOR};
         int[] invalidSlots = new int[]{5, 6, 7, 8};
 
         if (Arrays.stream(invalidSlots)
@@ -88,9 +88,8 @@ public class Kill implements GuiInterface {
 
         if (empty) return;
         if (Arrays.stream(invalidActions)
-                .anyMatch(d -> d == e.getAction()) || (((e.getAction() == InventoryAction.SWAP_WITH_CURSOR ||
-                Arrays.stream(placeActions)
-                        .anyMatch(d -> d == e.getAction())) && e.getClickedInventory() == inventory)) ||
+                .anyMatch(d -> d == e.getAction()) || ((Arrays.stream(placeActions)
+                .anyMatch(d -> d == e.getAction()) && e.getClickedInventory() == inventory)) ||
                 (e.getAction() == InventoryAction.MOVE_TO_OTHER_INVENTORY && e.getClickedInventory() != inventory))
             e.setCancelled(true);
     }
@@ -99,7 +98,6 @@ public class Kill implements GuiInterface {
     public void close(InventoryCloseEvent e) throws IOException, SQLException {
         // Do the inverse as before to put the current inv state back into the database
         List<ItemStack> itemStacks = new ArrayList<>();
-
         for (int i = 36; i < 45; i++) itemStacks.add(inventory.getItem(i));
         for (int i = 9; i < 36; i++) itemStacks.add(inventory.getItem(i));
         for (int i = 0; i < 5; i++) itemStacks.add(inventory.getItem(i));
