@@ -2,6 +2,7 @@ package com.connorcodde.killvault.events;
 
 import com.connorcodde.killvault.KillVault;
 import com.connorcodde.killvault.misc.Util;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -49,7 +50,8 @@ public class PlayerDeath implements Listener {
         Player killer = findKiller.get();
 
         /// sorry,,,
-        String deathMessage = e.getDeathMessage();
+        String deathMessage = PlainTextComponentSerializer.plainText()
+                .serialize(Objects.requireNonNull(e.deathMessage()));
         UUID killerUUID = killer.getUniqueId();
         UUID diedUUID = e.getPlayer()
                 .getUniqueId();
