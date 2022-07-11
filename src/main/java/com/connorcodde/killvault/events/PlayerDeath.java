@@ -3,12 +3,14 @@ package com.connorcodde.killvault.events;
 import com.connorcodde.killvault.KillVault;
 import com.connorcodde.killvault.misc.Util;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Material;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
 
 import java.io.IOException;
@@ -22,13 +24,16 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static com.connorcodde.killvault.events.PlayerInteract.respawnAnchorExplosions;
-import static org.bukkit.Bukkit.getServer;
 
 public class PlayerDeath implements Listener {
     @EventHandler
     void onPlayerDeath(PlayerDeathEvent e) throws IOException, SQLException {
-        System.out.println(respawnAnchorExplosions);
-        System.out.println(getServer().getCurrentTick());
+        if (Arrays.stream(e.getPlayer()
+                        .getInventory()
+                        .getContents())
+                .filter(Objects::nonNull)
+                .allMatch(i -> i.isSimilar(new ItemStack(
+                        Material.AIR)))) return;
 
         Optional<Player> findKiller = findKiller(Objects.requireNonNull(e.getPlayer()
                         .getLastDamageCause())
@@ -37,19 +42,18 @@ public class PlayerDeath implements Listener {
                 .getLastDamageCause()
                 .getCause() == EntityDamageEvent.DamageCause.BLOCK_EXPLOSION) {
             for (PlayerInteract.BlockDamageInfo i : respawnAnchorExplosions) {
-                if (!i.currentTick() || e.getPlayer()
+                if (i.notCurrentTick() || e.getPlayer()
                         .getLocation()
                         .distance(i.location()) > 5) continue;
                 findKiller = Optional.of(i.player());
                 break;
             }
         }
-        respawnAnchorExplosions.removeIf(i -> !i.currentTick());
+        respawnAnchorExplosions.removeIf(PlayerInteract.BlockDamageInfo::notCurrentTick);
 
         if (findKiller.isEmpty()) return;
         Player killer = findKiller.get();
 
-        /// sorry,,,
         String deathMessage = PlainTextComponentSerializer.plainText()
                 .serialize(Objects.requireNonNull(e.deathMessage()));
         UUID killerUUID = killer.getUniqueId();
@@ -62,7 +66,7 @@ public class PlayerDeath implements Listener {
                 .getContents()));
 
         PreparedStatement stmt = KillVault.database.connection.prepareStatement(
-                "INSERT INTO deaths (killer, dieer, deathInventory, deathMessage, deathTime) VALUES (?, ?, ?, ?, ?)");
+                "INSERT INTO deaths (killer, dieer, deathInventory, headRemoved, deathMessage, deathTime) VALUES (?, ?, ?, 0, ?, ?)");
         stmt.setString(1, killerUUID.toString());
         stmt.setString(2, diedUUID.toString());
         stmt.setString(3, inventory);

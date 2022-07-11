@@ -26,7 +26,7 @@ public class Database {
             stmt.executeUpdate("PRAGMA journal_mode = WAL");
 
             stmt.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS deaths (id integer primary key autoincrement, killer TEXT NOT NULL, dieer TEXT NOT NULL, deathInventory TEXT, deathMessage TEXT, deathTime INTEGER NOT NULL)");
+                    "CREATE TABLE IF NOT EXISTS deaths (id integer primary key autoincrement, killer TEXT NOT NULL, dieer TEXT NOT NULL, deathInventory TEXT, headRemoved INTEGER NOT NULL, deathMessage TEXT, deathTime INTEGER NOT NULL)");
             stmt.close();
         } catch (SQLException e) {
             e.printStackTrace();

@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 import java.util.logging.Level;
@@ -48,7 +49,7 @@ public class Util {
         return item;
     }
 
-    public static String formatEpochTime(long epochSeconds) {
+    public static String formatRelativeEpochTime(long epochSeconds) {
         float diff = Instant.now()
                 .getEpochSecond() - epochSeconds;
 
@@ -62,6 +63,12 @@ public class Util {
         return String.format("%d days", Math.round(diff));
     }
 
+    public static String formatEpochDate(long epochSeconds) {
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd yyyy", Locale.ENGLISH);
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return sdf.format(epochSeconds * 1000);
+    }
+
     public static void setPlayerItem(Inventory inv, int index, OfflinePlayer player, String deathMessage, long deathTime, int id) {
         inv.setItem(index, Util.cleanItemStack(Material.PLAYER_HEAD, 1, m -> {
             m.displayName(Component.text(player.getName() == null ? "UNKNOWN" : player.getName(),
@@ -70,7 +77,7 @@ public class Util {
 
             List<Component> lore = new ArrayList<>();
             lore.add(Component.text(deathMessage, GuiManager.BASE_STYLE));
-            lore.add(Component.text(Util.formatEpochTime(deathTime), GuiManager.BASE_STYLE));
+            lore.add(Component.text(Util.formatRelativeEpochTime(deathTime), GuiManager.BASE_STYLE));
             m.lore(lore);
 
             if (id < 0) return;

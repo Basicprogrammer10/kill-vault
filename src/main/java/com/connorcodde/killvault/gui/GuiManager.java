@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -61,6 +62,18 @@ public class GuiManager implements Listener {
         }
         inventory.remove(e.getPlayer()
                 .getUniqueId());
+    }
+
+    @EventHandler
+    void onInventoryDrag(InventoryDragEvent e) {
+        if (!inventory.containsKey(e.getWhoClicked()
+                .getUniqueId())) return;
+        try {
+            inventory.get(e.getWhoClicked()
+                    .getUniqueId()).gui.drag(e);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     @EventHandler

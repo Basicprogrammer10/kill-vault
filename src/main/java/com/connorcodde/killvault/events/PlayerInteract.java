@@ -32,8 +32,8 @@ public class PlayerInteract implements Listener {
     }
 
     public record BlockDamageInfo(Player player, Location location, int tick) {
-        public boolean currentTick() {
-            return getServer().getCurrentTick() == tick;
+        public boolean notCurrentTick() {
+            return getServer().getCurrentTick() != tick;
         }
     }
 }

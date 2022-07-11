@@ -13,6 +13,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -95,6 +96,11 @@ public class Vault implements GuiInterface {
                 .getStorageContents()[e.getSlot()].getType() != Material.PLAYER_HEAD) return;
         if (e.isLeftClick()) openKill(e);
         if (e.isRightClick()) deleteOne(e);
+    }
+
+    @Override
+    public void drag(InventoryDragEvent e) {
+
     }
 
     @Override

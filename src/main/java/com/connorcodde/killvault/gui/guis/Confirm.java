@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,13 +31,17 @@ public class Confirm implements GuiInterface {
     }
 
     @Override
-    public Inventory open(Player player, @Nullable Inventory inv) throws Exception {
+    public Inventory open(Player player, @Nullable Inventory inv) {
         inventory = inv;
         if (inventory == null || inventory.getSize() < 9 || inventory.getSize() % 9 != 0)
             inventory = getServer().createInventory(null, 45, Component.text("Vault"));
 
         int level = inventory.getSize() / 9 / 2 * 9 + 4;
-        slots = new int[]{level - 2, level, level + 2};
+        slots = new int[]{
+                level - 2,
+                level,
+                level + 2
+        };
         for (int i = 0; i < inventory.getSize(); i++) {
             int finalI = i;
             if (Arrays.stream(slots)
@@ -63,6 +68,11 @@ public class Confirm implements GuiInterface {
 
         if (e.getSlot() == slots[0]) no.run();
         if (e.getSlot() == slots[2]) yes.run();
+    }
+
+    @Override
+    public void drag(InventoryDragEvent e) {
+
     }
 
     @Override
