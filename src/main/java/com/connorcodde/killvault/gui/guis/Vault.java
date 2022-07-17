@@ -20,9 +20,11 @@ import org.bukkit.persistence.PersistentDataType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
+import static com.connorcodde.killvault.gui.GuiManager.BASE_STYLE;
 import static org.bukkit.Bukkit.getOfflinePlayer;
 import static org.bukkit.Bukkit.getServer;
 
@@ -45,8 +47,17 @@ public class Vault implements GuiInterface {
             if (mod != 0 && mod != 8 && div != 0 && div != 4) continue;
             inventory.setItem(i, GuiManager.BORDER_ITEM);
         }
+
+        inventory.setItem(4, Util.cleanItemStack(Material.BOOK, 1, m -> {
+            m.displayName(Component.text("Instructions", BASE_STYLE.color(NamedTextColor.WHITE)));
+            m.lore(Arrays.stream(
+                            "This is the kill vault.\n\nWhenever you kill a player, instead of them\ndropping their items they will be sent here.\nYou can left click a player head to open their\ndeath inventory, or right click to remove it.".split(
+                                    "\n"))
+                    .map(s -> (Component) Component.text(s, BASE_STYLE))
+                    .toList());
+        }));
         inventory.setItem(40, Util.cleanItemStack(Material.HEART_OF_THE_SEA, 1,
-                m -> m.displayName(Component.text("DELETE ALL", GuiManager.BASE_STYLE.color(NamedTextColor.RED)))));
+                m -> m.displayName(Component.text("DELETE ALL", BASE_STYLE.color(NamedTextColor.RED)))));
 
         // Query Database
         KillVault.database.connection.prepareStatement(
@@ -122,8 +133,8 @@ public class Vault implements GuiInterface {
 
         Runnable yes = () -> {
             try {
-                PreparedStatement stmt = KillVault.database.connection.prepareStatement(
-                        "DELETE FROM deaths WHERE killer = ?");
+                PreparedStatement stmt =
+                        KillVault.database.connection.prepareStatement("DELETE FROM deaths WHERE killer = ?");
                 stmt.setString(1, player.getUniqueId()
                         .toString());
                 stmt.executeUpdate();
@@ -147,8 +158,8 @@ public class Vault implements GuiInterface {
                 .get(ID_NAMESPACE, PersistentDataType.INTEGER));
 
         // Remove kill from vault
-        PreparedStatement stmt = KillVault.database.connection.prepareStatement(
-                "DELETE FROM deaths WHERE killer = ? AND id = ?");
+        PreparedStatement stmt =
+                KillVault.database.connection.prepareStatement("DELETE FROM deaths WHERE killer = ? AND id = ?");
         stmt.setString(1, player.getUniqueId()
                 .toString());
         stmt.setInt(2, id);

@@ -134,15 +134,22 @@ public class Kill implements GuiInterface {
         for (int i = 9; i < 36; i++) itemStacks.add(inventory.getItem(i));
         for (int i = 0; i < 5; i++) itemStacks.add(inventory.getItem(i));
 
+        // Delete kill it empty
+        if (itemStacks.stream()
+                .allMatch(Objects::isNull)) {
+            PreparedStatement stmt = KillVault.database.connection.prepareStatement("DELETE FROM deaths WHERE id = ?");
+            stmt.setInt(1, killId);
+            stmt.executeUpdate();
+            return;
+        }
+
         // Serialize inventor
         String inv = Util.inventoryToBase64(itemStacks);
 
         // Update Dahtabase
-        PreparedStatement stmt =
-                KillVault.database.connection.prepareStatement(
-                        "UPDATE deaths SET deathInventory = ?, headRemoved = ? WHERE id = ?");
+        PreparedStatement stmt = KillVault.database.connection.prepareStatement(
+                "UPDATE deaths SET deathInventory = ?, headRemoved = ? WHERE id = ?");
         stmt.setString(1, inv);
-        System.out.println(inventory.getItem(8));
         stmt.setInt(2, inventory.getItem(8) == null || headRemoved ? 1 : 0);
         stmt.setInt(3, killId);
         stmt.executeUpdate();

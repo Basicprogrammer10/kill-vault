@@ -53,7 +53,7 @@ public class Confirm implements GuiInterface {
         inventory.setItem(slots[0], Util.cleanItemStack(Material.RED_STAINED_GLASS_PANE, 1,
                 m -> m.displayName(Component.text("Deny", GuiManager.BASE_STYLE.color(NamedTextColor.RED)))));
 
-        inventory.setItem(slots[1], Util.cleanItemStack(Material.MAGENTA_STAINED_GLASS_PANE, 1,
+        inventory.setItem(slots[1], Util.cleanItemStack(Material.BOOK, 1,
                 m -> m.displayName(Component.text(message, GuiManager.BASE_STYLE))));
 
         inventory.setItem(slots[2], Util.cleanItemStack(Material.LIME_STAINED_GLASS_PANE, 1,
